@@ -102,9 +102,9 @@ const SharePresentationView: React.FC<SharePresentationViewProps> = ({ project }
             {slidesArray[currentSlideIndex] ? (
               <div 
                 className="w-full max-w-6xl h-full flex items-center justify-center rounded-lg shadow-2xl"
-                style={{ 
+                  style={{ 
                   backgroundColor: theme.slideBackgroundColor || theme.backgroundColor,
-                  color: theme.textColor 
+                  color: theme.fontColor 
                 }}
               >
                 <div className="p-12 text-center">
@@ -124,7 +124,7 @@ const SharePresentationView: React.FC<SharePresentationViewProps> = ({ project }
                 <h1 className="text-4xl font-bold mb-4" style={{ color: theme.accentColor }}>
                   No slides available
                 </h1>
-                <p className="text-xl" style={{ color: theme.textColor }}>
+                <p className="text-xl" style={{ color: theme.fontColor }}>
                   This presentation doesn't contain any slides yet.
                 </p>
               </div>
@@ -250,7 +250,7 @@ const SharePresentationView: React.FC<SharePresentationViewProps> = ({ project }
                   </h2>
                   <p 
                     className="text-xl"
-                    style={{ color: theme.textColor }}
+                    style={{ color: theme.fontColor }}
                   >
                     {slidesArray[0]?.content || 'Welcome to this presentation'}
                   </p>

@@ -1,4 +1,4 @@
-import { Theme } from "@/lib/constants";
+import { themes } from "@/lib/constants";
 import { Slide } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Image } from "lucide-react";
@@ -6,10 +6,11 @@ import React from "react";
 
 type Props = {
   slide: Slide;
-  theme: Theme;
+  themeName: string;
 };
 
-function ThumbnailPreview({ slide, theme }: Props) {
+function ThumbnailPreview({ slide, themeName }: Props) {
+  const theme = themes.find(t => t.name === themeName) || themes[0];
 
   //add preview of Slides
   return (

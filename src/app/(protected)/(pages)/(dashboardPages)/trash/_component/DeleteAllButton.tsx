@@ -27,9 +27,7 @@ const DeleteAllButton = ({ Projects }: Props) => {
     }
 
     try {
-      const res = await deleteAllProjects(
-        Projects.map((project) => project.id)
-      );
+      const res = await deleteAllProjects();
       if (res.status !== 200) {
         throw new Error("Failed to delete all projects");
       }
