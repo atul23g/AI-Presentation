@@ -47,14 +47,43 @@ export const useSlideStore = create(
     (set, get) => ({
       project: null,
       slides: [],
-      setSlides: (slides: Slide[]) => set({ slides }),
-      setProject: (project: Project) => set({ project }),
+      setSlides: (slides: Slide[]) => {
+        // Ensure slides is always an array
+        const slidesArray = Array.isArray(slides) ? slides : [];
+        console.log(`🟢 Setting slides in store:`, slidesArray.length, 'slides');
+        
+        // Normalize and ensure globally unique slide IDs to satisfy React keys
+        const seenIds = new Set<string>();
+        const normalized = slidesArray.map((slide, index) => {
+          let normalizedId = typeof slide.id === 'string' ? slide.id : '';
+          if (!normalizedId || seenIds.has(normalizedId)) {
+            normalizedId = uuidv4();
+          }
+          seenIds.add(normalizedId);
+          return {
+            ...slide,
+            id: normalizedId,
+            slideOrder: typeof slide.slideOrder === 'number' ? slide.slideOrder : index,
+          } as Slide;
+        });
+        set({ slides: normalized });
+      },
+      setProject: (project: Project) =>
+        set((state) => {
+          // If switching to a different project, clear stale slides immediately
+          if (state.project?.id && state.project.id !== project.id) {
+            return { project, slides: [] };
+          }
+          return { project };
+        }),
       currentTheme: defaultTheme,
       setCurrentTheme: (theme: Theme) => set({ currentTheme: theme }),
       currentSlide: 0,
       getOrderedSlides: () => {
         const state = get();
-        return [...state.slides].sort((a, b) => a.slideOrder - b.slideOrder);
+        // Ensure slides is always an array
+        const slidesArray = Array.isArray(state.slides) ? state.slides : [];
+        return [...slidesArray].sort((a, b) => (a.slideOrder || 0) - (b.slideOrder || 0));
       },
       addSlideAtIndex: (slide: Slide, index: number) =>
         set((state) => {
@@ -155,7 +184,19 @@ export const useSlideStore = create(
       },
     }),
     {
-      name: "slides-storage",
+      name: "slides-storage-v2",
+      version: 2,
+      migrate: (persistedState: any, version: number) => {
+        // On upgrade, clear potentially stale project/slides to avoid cross-project leakage
+        if (version < 2) {
+          return {
+            ...persistedState,
+            project: null,
+            slides: [],
+          };
+        }
+        return persistedState as SlideState;
+      },
     }
   )
 );

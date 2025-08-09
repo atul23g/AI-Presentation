@@ -34,7 +34,7 @@ type Props = {
 
 const CreativeAI = ({ onBack }: Props) => {
 
-  const { setProject } = useSlideStore()
+  const { setProject, setSlides } = useSlideStore()
   const router = useRouter();
   const [editingCard, seteditingCard] = useState<string | null>(null);
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
@@ -65,34 +65,42 @@ const CreativeAI = ({ onBack }: Props) => {
   };
 
   const generateOutline = async () => {
-  setIsGenerating(true);
-  const res = await generateCreativePrompt(currentAiPrompt);
+    setIsGenerating(true);
+    
+    try {
+      const res = await generateCreativePrompt(currentAiPrompt);
 
-  if (res.status === 200 && res?.data?.outlines) {
-    const cardsData: OutlineCard[] = [];
+      if (res.status === 200 && res?.data?.outlines) {
+        const cardsData: OutlineCard[] = [];
 
-    res.data?.outlines.map((outline: string, idx: number) => {
-      const newCard = {
-        id: v4(),
-        title: outline,
-        order: idx + 1,
-      };
-      cardsData.push(newCard);
-    });
+        res.data?.outlines.map((outline: string, idx: number) => {
+          const newCard = {
+            id: v4(),
+            title: outline,
+            order: idx + 1,
+          };
+          cardsData.push(newCard);
+        });
 
-    addMultipleOutlines(cardsData);
-    setNoOfCards(cardsData.length);
-    toast.success('Success', {
-      description: 'Outlines generated successfully',
-    });
-  } else {
-    toast.error('Error', {
-      description: 'Failed to generate outline. Please try again.',
-    });
-  }
+        addMultipleOutlines(cardsData);
+        setNoOfCards(cardsData.length);
+        toast.success('Success', {
+          description: 'Outlines generated successfully',
+        });
+      } else {
+        toast.error('Error', {
+          description: res.error || 'Failed to generate outline. Please try again.',
+        });
+      }
+    } catch (error) {
+      console.error('Error generating outline:', error);
+      toast.error('Error', {
+        description: 'Failed to generate outline. Please try again.',
+      });
+    }
 
-  setIsGenerating(false);
-};
+    setIsGenerating(false);
+  };
 
 
 const handleGenerate = async () => {
@@ -102,6 +110,7 @@ const handleGenerate = async () => {
     toast.error('Error', {
       description: 'Please add at least one card to generate slides'
     });
+    setIsGenerating(false);
     return;
   }
 
@@ -112,9 +121,19 @@ const handleGenerate = async () => {
     );
 
     if (res.status !== 200 || !res.data) {
-      throw new Error('Unable to create project');
+      // Handle specific error cases
+      if (res.status === 403) {
+        throw new Error('Authentication required. Please sign in again.');
+      } else if (res.status === 500) {
+        throw new Error('Server error. Please try again in a moment.');
+      } else {
+        throw new Error(res.error || 'Unable to create project');
+      }
     }
 
+    // Clear any persisted slides before moving to the new project's theme page
+    try { localStorage.removeItem('slides-storage-v2'); } catch {}
+    setSlides([]);
     router.push(`/presentation/${res.data.id}/select-theme`);
 
     setProject(res.data);

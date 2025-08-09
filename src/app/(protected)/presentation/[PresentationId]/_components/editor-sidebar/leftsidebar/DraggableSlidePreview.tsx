@@ -52,7 +52,18 @@ const DraggableSlidePreview = ({ index, moveSlide, slide }: Props) => {
         index === currentSlide ? "before:bg-blue-500" : "before:bg-transparent",
         isDragging ? "opacity-50" : "opacity-100"
       )}
-      onClick={() => setCurrentSlide(index)}
+      onClick={() => {
+        setCurrentSlide(index);
+        // Add a subtle visual feedback
+        if (ref.current) {
+          ref.current.style.transform = 'scale(0.98)';
+          setTimeout(() => {
+            if (ref.current) {
+              ref.current.style.transform = '';
+            }
+          }, 150);
+        }
+      }}
     >
       <div className="pl-2 mb-4 relative">
         <ScaledPreview 

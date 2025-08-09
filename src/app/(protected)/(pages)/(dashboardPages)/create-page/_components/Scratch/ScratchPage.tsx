@@ -75,6 +75,8 @@ const ScratchPage = ({ onBack }: Props) => {
     }
 
     if (res.data) {
+      // Clear any persisted slides to avoid stale carryover
+      try { localStorage.removeItem('slides-storage-v2'); } catch {}
       setProject(res.data);
       resetOutlines();
       toast.success("Success", {

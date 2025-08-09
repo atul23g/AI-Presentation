@@ -115,7 +115,14 @@ export const createproject = async (title: string, outlines: OutlineCard[]) => {
     const alloutlines = outlines.map((outline) => outline.title);
 
     const checkUser = await onAuthenticateUser();
-    if (checkUser.status !== 200 || !checkUser.user) {
+    if (checkUser.status !== 200 && checkUser.status !== 201) {
+      return { 
+        status: checkUser.status, 
+        error: checkUser.error || 'User authentication failed' 
+      };
+    }
+    
+    if (!checkUser.user) {
       return { status: 403, error: 'User not authenticated' };
     }
 
@@ -186,5 +193,73 @@ export const updateSlides = async (projectId: string, slides: JsonValue) => {
   } catch (error) {
     console.error('ERROR', error);
     return { status: 500, error: 'Internal server error' };
+  }
+};
+
+export const updateTheme = async (projectId: string, themeName: string) => {
+  try {
+    const checkUser = await onAuthenticateUser();
+    if (checkUser.status != 200 || !checkUser.user) {
+      return { status: 403, error: 'User not authenticated' };
+    }
+
+    const updatedProject = await client.project.update({
+      where: { id: projectId, userId: checkUser.user.id },
+      data: { themeName },
+    });
+
+    if (!updatedProject) {
+      return { status: 500, error: 'Failed to update theme' };
+    }
+
+    return { status: 200, data: updatedProject };
+  } catch (error) {
+    console.log("🔴 ERROR", error);
+    return { status: 500, error: "Internal server error" };
+  }
+};
+
+export const getDeletedProjects = async () => {
+  try {
+    const checkUser = await onAuthenticateUser();
+    if (checkUser.status != 200 || !checkUser.user) {
+      return { status: 403, error: "User Not Authenticated" };
+    }
+
+    const projects = await client.project.findMany({
+      where: {
+        userId: checkUser.user.id,
+        isDeleted: true,
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+    });
+
+    return { status: 200, data: projects };
+  } catch (error) {
+    console.log("🔴 ERROR", error);
+    return { status: 500, error: "Internal server error" };
+  }
+};
+
+export const deleteAllProjects = async () => {
+  try {
+    const checkUser = await onAuthenticateUser();
+    if (checkUser.status != 200 || !checkUser.user) {
+      return { status: 403, error: "User Not Authenticated" };
+    }
+
+    const result = await client.project.deleteMany({
+      where: {
+        userId: checkUser.user.id,
+        isDeleted: true,
+      },
+    });
+
+    return { status: 200, data: result };
+  } catch (error) {
+    console.log("🔴 ERROR", error);
+    return { status: 500, error: "Internal server error" };
   }
 };

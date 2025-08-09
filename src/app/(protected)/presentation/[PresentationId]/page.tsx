@@ -21,14 +21,17 @@ type Props = {}
 
 const Page = (props: Props) => {
   const params = useParams()
+  const presentationId = ((params as any).PresentationId || (params as any).presentationId) as string
   const { setTheme } = useTheme()
   const [isLoading, setIsLoading] = useState(true)
-  const { setSlides, setProject, currentTheme, setCurrentTheme } = useSlideStore()
+  const { setSlides, setProject, currentTheme, setCurrentTheme, project } = useSlideStore()
 
   useEffect(() => {
+    // Clear any previously persisted slides immediately to avoid showing stale content
+    setSlides([])
     ;(async () => {
       try {
-        const res = await getProjectById(params.presentationId as string)
+        const res = await getProjectById(presentationId)
         if (res.status !== 200 || !res.data) {
           toast.error('Error', {
             description: 'Unable to fetch project',
@@ -42,8 +45,16 @@ const Page = (props: Props) => {
         )
         setCurrentTheme(findTheme || themes[0])
         setTheme(findTheme?.type === 'dark' ? 'dark' : 'light')
+        // If we navigate to a different project, clear slides to avoid stale view
+        if (project?.id !== res.data.id) {
+          setSlides([])
+        }
         setProject(res.data)
-        setSlides(JSON.parse(JSON.stringify(res.data.slides)))
+        // Ensure slides is an array before setting it
+        const slidesData = res.data.slides ? JSON.parse(JSON.stringify(res.data.slides)) : [];
+        const slidesArray = Array.isArray(slidesData) ? slidesData : [];
+        console.log(`🟢 Loading slides from database:`, slidesArray.length, 'slides');
+        setSlides(slidesArray);
       } catch (error) {
         toast.error('Error', {
           description: 'An unexpected error occurred',
@@ -65,7 +76,7 @@ const Page = (props: Props) => {
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="min-h-screen flex flex-col">
-        <Navbar presentationId={params.presentationId as string} />
+        <Navbar presentationId={presentationId} />
         <div
           className="flex-1 flex overflow-hidden pt-16"
           style={{

@@ -7,7 +7,7 @@ import DraggableSlidePreview from "./DraggableSlidePreview";
 type Props = {};
 
 const LayoutPreview = (props: Props) => {
-  const { getOrderedSlides, reorderSlides } = useSlideStore();
+  const { getOrderedSlides, reorderSlides, project } = useSlideStore();
   const slides = getOrderedSlides();
   const [loading, setLoading] = useState(true);
   const moveSlide = (dragIndex: number, hoverIndex: number) => {
@@ -20,7 +20,22 @@ const LayoutPreview = (props: Props) => {
 
   return (
     <div className="w-72 h-full fixed left-0 top-20 border-r overflow-y-auto">
-      <ScrollArea className="h-full w-full" suppressHydrationWarning>
+      <ScrollArea 
+        className="h-full w-full" 
+        suppressHydrationWarning
+        onWheel={(e) => {
+          const target = e.currentTarget;
+          const scrollTop = target.scrollTop;
+          const scrollHeight = target.scrollHeight;
+          const clientHeight = target.clientHeight;
+          
+          // Prevent scroll propagation when at the top or bottom
+          if ((scrollTop <= 0 && e.deltaY < 0) || 
+              (scrollTop + clientHeight >= scrollHeight && e.deltaY > 0)) {
+            e.stopPropagation();
+          }
+        }}
+      >
         {loading ? (
           <div className="w-full px-4 flex flex-col space-y-6">
             <Skeleton className="h-20 w-full" />
@@ -42,7 +57,7 @@ const LayoutPreview = (props: Props) => {
             </div>
             {slides.map((slide, index) => (
               <DraggableSlidePreview
-                key={slide.id || index}
+                key={`${project?.id || 'proj'}-${slide.id || index}`}
                 slide={slide}
                 index={index}
                 moveSlide={moveSlide}

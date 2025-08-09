@@ -63,7 +63,7 @@ const Card = ({
           onClick={onCardClick}
           onDoubleClick={onCardDoubleClick}
         >
-          <div className="flex justify-between items-center">
+          <div className="flex items-center gap-4">
             {isEditing ? (
               <Input
                 ref={inputRef}
@@ -75,9 +75,9 @@ const Card = ({
               />
             ) : (
               <>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-4 w-full">
                   <span
-                    className={`text-base sm:text-lg py-1 px-4 rounded-xl bg-primary-20 ${
+                    className={`flex items-center justify-center w-12 h-12 sm:w-12 sm:h-12 rounded-xl bg-primary-20 text-base sm:text-lg font-semibold ${
                       isEditing || isSelected
                         ? 'bg-secondary-90 dark:text-black'
                         : ''
@@ -85,19 +85,22 @@ const Card = ({
                   >
                     {card.order}
                   </span>
+                  <span className="text-base sm:text-lg leading-relaxed break-words">
+                    {card.title}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="ml-auto"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onDeleteClick()
+                    }}
+                    aria-label={`Delete card ${card.order}`}
+                  >
+                    <Trash2 className='w-4 h-4'></Trash2>
+                  </Button>
                 </div>
-                <span className="text-base sm:text-lg">{card.title}</span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onDeleteClick()
-                  }}
-                  aria-label={`Delete card ${card.order}`}
-                >
-                  <Trash2 className='w-4 h-4'></Trash2>
-                </Button>
               </>
             )}
           </div>

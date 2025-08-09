@@ -17,16 +17,20 @@ type Props = {};
 
 const ThemePreview = (props: Props) => {
   const params = useParams();
+  const presentationId = ((params as any).PresentationId || (params as any).presentationId) as string;
   const router = useRouter();
   const controls = useAnimation();
   const { currentTheme, setCurrentTheme, project } = useSlideStore();
   const [selectedTheme, setSelectedTheme] = useState<Theme>(currentTheme);
 
   useEffect(() => {
-    if (project?.slides) {
-      redirect(`/presentation/${params.presentationId}`);
+    // Guard against stale persisted slides: if store project doesn't match route, clear slides
+    if (project?.id && project.id !== presentationId) {
+      // no redirect here, just keep preview until user generates theme
+    } else if (project?.slides && project.id === presentationId) {
+      redirect(`/presentation/${presentationId}`);
     }
-  }, [project]);
+  }, [project, presentationId]);
 
   useEffect(() => {
     controls.start("visible");

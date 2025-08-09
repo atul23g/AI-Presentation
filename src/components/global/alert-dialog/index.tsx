@@ -19,6 +19,7 @@ type Props = {
   onClick?: () => void;
   open: boolean;
   handleOpen: () => void;
+  actionText?: string;
 };
 
 function AlertDialogBox({
@@ -29,6 +30,7 @@ function AlertDialogBox({
   onClick,
   handleOpen,
   open,
+  actionText = "Continue",
 }: Props) {
   return (
     <AlertDialog open={open} onOpenChange={handleOpen}>
@@ -43,14 +45,15 @@ function AlertDialogBox({
           variant={"destructive"}
           className={className}
           onClick={onClick}
+          disabled={loading}
         >
           {loading ? (
             <>
-              <Loader2 className="animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Loading...
             </>
           ) : (
-            "Continue"
+            actionText
           )}
         </Button>
       </AlertDialogContent>

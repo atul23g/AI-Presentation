@@ -2,8 +2,8 @@ import React from "react";
 import { getAllProjects } from "@/actions/project";
 import NotFound from "@/components/global/not-found";
 import Projects from "@/components/global/projects";
-import ProjectCard from "@/components/global/project-card";
 
+// This is a Server Component that fetches projects server-side before rendering
 const DashboardPage = async () => {
   const allProjects = await getAllProjects();
 
@@ -25,8 +25,6 @@ const DashboardPage = async () => {
       ) : (
         <NotFound />
       )}
-
-      {/* {projects}*/}
     </div>
   );
 };

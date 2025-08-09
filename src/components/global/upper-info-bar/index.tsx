@@ -4,8 +4,6 @@ import { Separator } from "@radix-ui/react-separator";
 import React from "react";
 import SearchBar from "./upper-info-searchbar";
 import ThemeSwitcher from "../mode-toggle";
-import { Button } from "@/components/ui/button";
-import { Upload } from "lucide-react";
 import NewProjectButton from "./new-project-button";
 
 type Props = {
@@ -24,10 +22,6 @@ function UpperInforBar({ user }: Props) {
         <ThemeSwitcher></ThemeSwitcher>
 
         <div className="flex flex-wrap gap-4 items-center justify-end ">
-          <Button className="bg-primary-80 rounded-lg hover: bg-background-80 text-primary font-semibold cursor-not-allowed">
-            <Upload></Upload>
-            Import
-          </Button>
           <NewProjectButton user={user}></NewProjectButton>
         </div>
       </div>

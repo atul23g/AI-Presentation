@@ -40,7 +40,7 @@ type MasterRecursiveComponentProps = {
 };
 
 const ContentRenderer: React.FC<MasterRecursiveComponentProps> = React.memo(
-  ({ content, onContentChange, slideId, index, isPreview, isEditable }) => {
+  ({ content, onContentChange, slideId, index: _index, isPreview, isEditable }) => {
     const handleChange = useCallback(
       (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         onContentChange(content.id, e.target.value);
@@ -136,7 +136,7 @@ const ContentRenderer: React.FC<MasterRecursiveComponentProps> = React.memo(
         }
         return null;
       case "image":
-        <motion.div {...animationProps} className="w-full h-full">
+       return ( <motion.div {...animationProps} className="w-full h-full">
           <CustomImage
             src={content.content as string}
             alt={content.alt || "image"}
@@ -146,7 +146,7 @@ const ContentRenderer: React.FC<MasterRecursiveComponentProps> = React.memo(
             onContentChange={onContentChange}
             isEditable={isEditable}
           />
-        </motion.div>;
+        </motion.div>);
 
       case "blockquote":
         return (
@@ -247,6 +247,7 @@ const ContentRenderer: React.FC<MasterRecursiveComponentProps> = React.memo(
                         subIndex === 0 &&
                         isEditable && (
                           <DropZone
+                            key={`column-dropzone-${content.id}-${slideId}-0`}
                             index={0}
                             parentId={content.id}
                             slideId={slideId}
@@ -262,6 +263,7 @@ const ContentRenderer: React.FC<MasterRecursiveComponentProps> = React.memo(
                       />
                       {!isPreview && !subItem.restrictToDrop && isEditable && (
                         <DropZone
+                          key={`column-dropzone-${content.id}-${slideId}-${subIndex + 1}`}
                           index={subIndex + 1}
                           parentId={content.id}
                           slideId={slideId}
@@ -271,7 +273,12 @@ const ContentRenderer: React.FC<MasterRecursiveComponentProps> = React.memo(
                   )
                 )
               ) : isEditable ? (
-                <DropZone index={0} parentId={content.id} slideId={slideId} />
+                <DropZone 
+                  key={`column-dropzone-${content.id}-${slideId}-empty`}
+                  index={0} 
+                  parentId={content.id} 
+                  slideId={slideId} 
+                />
               ) : null}
             </motion.div>
           );

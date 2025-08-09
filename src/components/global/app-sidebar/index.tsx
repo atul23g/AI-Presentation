@@ -40,13 +40,12 @@ const AppSidebar = ({
         >
           <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground">
             <Avatar className="h-10 w-10 rounded-full">
-              <AvatarImage src="/vivid.png" alt="vivid-logo" />
-              <AvatarFallback className="rounded-lg">VI</AvatarFallback>
+              <AvatarImage src="/vivid.png" alt="AI Presentation logo" />
+              <AvatarFallback className="rounded-lg">AI</AvatarFallback>
             </Avatar>
           </div>
           <span className="turncate text-primary text-3xl font-semibold">
-            {" "}
-            vivid
+            AI Presentation
           </span>
         </SidebarMenuButton>
       </SidebarHeader>

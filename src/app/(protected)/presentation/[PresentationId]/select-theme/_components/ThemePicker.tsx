@@ -44,7 +44,7 @@ const ThemePicker = ({ onThemeSelect, selectedTheme, themes }: Props) => {
     }
 
     try {
-      const PresentationId = params.PresentationId as string;
+      const PresentationId = (params.PresentationId || params.presentationId) as string;
       console.log(
         "Sending to API - PresentationId:",
         PresentationId,
@@ -56,8 +56,17 @@ const ThemePicker = ({ onThemeSelect, selectedTheme, themes }: Props) => {
 
       console.log("API Response:", res);
 
-      if (res.status !== 200 || !res?.data) {
-        throw new Error(res.error || "Failed to generate layouts");
+      // Handle specific quota error
+      if (res.status === 429) {
+        toast.error("API Quota Exceeded", {
+          description: "Please wait a moment and try again. The AI service is temporarily overloaded.",
+        });
+        return;
+      }
+
+      if (res.status !== 200 || !('data' in res) || !res.data) {
+        const errMsg = 'error' in res && res.error ? res.error : 'Failed to generate layouts';
+        throw new Error(errMsg);
       }
 
       toast.success("Success", {
@@ -65,16 +74,31 @@ const ThemePicker = ({ onThemeSelect, selectedTheme, themes }: Props) => {
       });
 
       // Only navigate if we have valid slides data
-      if (res.data) {
-        setSlides(res.data);
-        router.push(`/presentation/${project.id}`);
+      if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+        // Ensure res.data is an array before setting it
+        const slidesArray = Array.isArray(res.data) ? res.data : [];
+        console.log(`🟢 Setting ${slidesArray.length} slides in ThemePicker`);
+        // Clear old slides first to avoid any stale render, then set fresh ones
+        setSlides([]);
+        setSlides(slidesArray);
+        router.push(`/presentation/${PresentationId}`);
+      } else {
+        throw new Error("No slides data received from the server");
       }
     } catch (error) {
       console.error("Full error:", error);
-      toast.error("Error", {
-        description:
-          error instanceof Error ? error.message : "Failed to generate layouts",
-      });
+      
+      // Handle network errors
+      if (error instanceof TypeError && error.message.includes("Failed to fetch")) {
+        toast.error("Network Error", {
+          description: "Failed to connect to the server. Please check your connection and try again.",
+        });
+      } else {
+        toast.error("Error", {
+          description:
+            error instanceof Error ? error.message : "Failed to generate layouts",
+        });
+      }
     } finally {
       setLoading(false);
     }

@@ -19,7 +19,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Vivid - AI PPT Generator",
+  title: "AI Presentation - AI PPT Generator",
   description: "Build AI powered PPT Generator",
 };
 
