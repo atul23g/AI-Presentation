@@ -10,8 +10,10 @@ const NewProjectButton = ({ user }: { user: User }) => {
   const router = useRouter();
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(false);
+  const [isActivating, setIsActivating] = useState(false);
 
   const handleClick = async () => {
+    if (!user?.subscription || isActivating) return;
     setIsLoading(true);
     try {
       await router.push('/create-page');
@@ -27,18 +29,39 @@ const NewProjectButton = ({ user }: { user: User }) => {
     setIsLoading(false);
   }, [pathname]);
 
+  // Reflect activation state triggered from the sidebar "Free" button
+  useEffect(() => {
+    // If already subscribed, ensure flag is cleared
+    if (user?.subscription) {
+      try { localStorage.removeItem('subscriptionActivating'); } catch {}
+      setIsActivating(false);
+      return;
+    }
+
+    try {
+      const flag = typeof window !== 'undefined' ? localStorage.getItem('subscriptionActivating') : null;
+      if (flag) {
+        setIsActivating(true);
+        // Safety timeout in case refresh takes longer than expected
+        const t = setTimeout(() => setIsActivating(false), 20000);
+        return () => clearTimeout(t);
+      }
+    } catch {}
+  }, [user?.subscription]);
+
   return (
     <Button
-      disabled={!user?.subscription || isLoading}
+      aria-busy={isLoading || isActivating}
+      disabled={!user?.subscription || isLoading || isActivating}
       className="rounded-lg font-semibold"
       onClick={handleClick}
     >
-      {isLoading ? (
+      {isLoading || isActivating ? (
         <Loader2 className="animate-spin" />
       ) : (
         <Plus />
       )}
-      {isLoading ? "Creating..." : "New Project"}
+      {isLoading ? "Creating..." : isActivating ? "Activating..." : "New Project"}
     </Button>
   );
 };

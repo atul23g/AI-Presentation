@@ -35,17 +35,17 @@ const AppSidebar = ({
     >
       <SidebarHeader className="pt-6 px-2 pb-0">
         <SidebarMenuButton
-          size="lg"
+          size="default"
           className="data-[state=open]:text-sidebar-accent-foreground"
         >
           <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground">
-            <Avatar className="h-10 w-10 rounded-full">
+            <Avatar className="h-8 w-8 rounded-full">
               <AvatarImage src="/vivid.png" alt="AI Presentation logo" />
               <AvatarFallback className="rounded-lg">AI</AvatarFallback>
             </Avatar>
           </div>
-          <span className="turncate text-primary text-3xl font-semibold">
-            AI Presentation
+          <span className="truncate whitespace-nowrap text-primary text-lg font-semibold">
+            AI-Presentation
           </span>
         </SidebarMenuButton>
       </SidebarHeader>

@@ -6,11 +6,12 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { buySubscription } from "@/actions/lemonSqueezy";
+import { activateFreeSubscription } from "@/actions/user";
 import { toast } from "sonner";
 
 const NavFooter = ({ prismaUser }: { prismaUser: User }) => {
   const { isLoaded, isSignedIn, user } = useUser();
-  const [loading, setLoading] = useState(false);
+  const [pendingAction, setPendingAction] = useState<"upgrade" | "free" | null>(null);
   const router = useRouter();
 
   const handleUpgrade = async () => {
@@ -25,7 +26,7 @@ const NavFooter = ({ prismaUser }: { prismaUser: User }) => {
       return;
     }
 
-    setLoading(true);
+    setPendingAction("upgrade");
     try {
       console.log("🟢 Starting upgrade for user:", prismaUser.id);
       const result = await buySubscription(prismaUser.id);
@@ -46,10 +47,37 @@ const NavFooter = ({ prismaUser }: { prismaUser: User }) => {
         description: "Please try again later",
       });
     } finally {
-      setLoading(false);
+      setPendingAction(null);
     }
   };
 
+  const handleFree = async () => {
+    try {
+      if (!prismaUser?.id) {
+        toast.error("User data not found");
+        return;
+      }
+      setPendingAction("free");
+      // Signal other UI pieces (like New Project button) to show activating state until refresh
+      try { localStorage.setItem('subscriptionActivating', '1'); } catch {}
+      const res = await activateFreeSubscription(prismaUser.id);
+      if (res.status === 200) {
+        toast.success("Plan upgraded");
+        // Keep the UI in a pending/upgraded state until the card disappears on refresh
+        router.refresh();
+      } else {
+        toast.error("Could not activate free plan", { description: res.error });
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+    } finally {
+      // Let router.refresh take over hiding this card; if it lingers, clear state
+      setTimeout(() => {
+        setPendingAction(null);
+        try { localStorage.removeItem('subscriptionActivating'); } catch {}
+      }, 1500);
+    }
+  };
 
 
 
@@ -74,17 +102,30 @@ const NavFooter = ({ prismaUser }: { prismaUser: User }) => {
               </div>
               <div className="w-full bg-vivid-gradient p-[1px] rounded-full group">
                 <Button
-                  className="w-full bg-background-80 group-hover:bg-background-90 text-primary rounded-full font-bold border-0 transition-colors"
+                  className="w-full bg-background-80 hover:bg-background-80 text-primary rounded-full font-bold border-0 transition-colors"
                   variant={"default"}
                   size={"lg"}
                   onClick={handleUpgrade}
-                  disabled={loading}
+                  disabled={!!pendingAction}
                 >
-                  {loading ? "Upgrading..." : "Upgrade"}
+                  {pendingAction === "upgrade"
+                    ? "Upgrading..."
+                    : pendingAction === "free"
+                    ? "Upgraded"
+                    : "Upgrade"}
                 </Button>
               </div>
-
-
+              <div className="w-full bg-vivid-gradient p-[1px] rounded-full group">
+                <Button
+                  className="w-full bg-background-80 hover:bg-background-80 text-primary rounded-full font-bold border-0 transition-colors"
+                  variant={"default"}
+                  size={"lg"}
+                  onClick={handleFree}
+                  disabled={!!pendingAction}
+                >
+                  {pendingAction === "free" ? "Activating..." : "Free"}
+                </Button>
+              </div>
             </div>
           )}
 

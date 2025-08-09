@@ -61,6 +61,28 @@ export const onAuthenticateUser = async () => {
     }
 };
 
+// Activate free subscription for a given Prisma user id
+export const activateFreeSubscription = async (userId: string) => {
+    try {
+        if (!userId) {
+            return { status: 400, error: "Invalid user id" };
+        }
+
+        const updated = await client.user.update({
+            where: { id: userId },
+            data: { subscription: true, updatedAt: new Date() },
+        });
+
+        return { status: 200, user: updated };
+    } catch (error) {
+        console.error("🔴 ERROR in activateFreeSubscription:", error);
+        return {
+            status: 500,
+            error: error instanceof Error ? error.message : "Failed to activate free subscription",
+        };
+    }
+};
+
 // Update user profile information
 export const updateUserProfile = async (data: { name?: string; email?: string }) => {
     try {
